@@ -32,7 +32,7 @@
                             <% cart.items.forEach(item => { %>
                                 <tr class="alert" role="alert">
                                     <td>
-                                        <input type="hidden" name="productId" value="<%= item.productId._id %>">
+                                        <input type="hidden" name="productId" value="<%= item.productId ? item.productId._id : '' %>">
                                         <label class="checkbox-wrap checkbox-primary">
                                             <input type="checkbox">
                                             <span class="checkmark"></span>

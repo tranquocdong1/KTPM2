@@ -13,8 +13,11 @@ router.get('/cart', async (req, res) => {
     
     let subtotal = 0;
     if (cart && cart.items) {
+      cart.items = cart.items.filter(item => item.productId);
       cart.items.forEach(item => {
-        subtotal += item.productId.price * item.quantity;
+        if (item.productId && item.productId.price) { // Kiểm tra productId không null
+          subtotal += item.productId.price * item.quantity;
+        }
       });
     }
 
