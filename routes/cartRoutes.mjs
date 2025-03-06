@@ -140,4 +140,72 @@ router.post('/remove-from-cart', async (req, res) => {
   }
 });
 
+// Điều chỉnh route remove-from-cart để trả về cấu trúc đầy đủ giống như /api/cart
+router.post('/api/remove-from-cart', async (req, res) => {
+  const { productId } = req.body; 
+  
+  console.log('Nhận yêu cầu xóa sản phẩm:', productId);
+
+  try {
+    const userId = req.session.userId; 
+
+    const cart = await Cart.findOneAndUpdate(
+      { userId },
+      { $pull: { items: { productId: productId } } }, 
+      { new: true } 
+    ).populate('items.productId');
+
+    if (!cart) {
+      return res.status(404).json({ 
+        message: "Giỏ hàng không tồn tại.",
+        items: [],
+        subtotal: "0.00",
+        count: 0
+      });
+    }
+
+    let subtotal = 0;
+    let items = [];
+
+    if (cart && cart.items) {
+      items = cart.items
+        .filter(item => item.productId)
+        .map(item => {
+          if (item.productId && item.productId.price) {
+            const itemSubtotal = item.productId.price * item.quantity;
+            subtotal += itemSubtotal;
+
+            return {
+              _id: item.productId._id,
+              name: item.productId.name,
+              price: item.productId.price,
+              quantity: item.quantity,
+              image: item.productId.image,
+              subtotal: itemSubtotal
+            };
+          }
+          return null;
+        })
+        .filter(item => item !== null);
+    }
+
+    res.json({
+      message: 'Sản phẩm đã được xóa', 
+      items: items,
+      subtotal: subtotal.toFixed(2),
+      count: items.length,
+      success: true
+    });
+  } catch (error) {
+    console.error('Lỗi khi xóa sản phẩm:', error);
+    res.status(500).json({ 
+      message: 'Lỗi khi xóa sản phẩm khỏi giỏ hàng.',
+      items: [],
+      subtotal: "0.00",
+      count: 0,
+      success: false
+    });
+  }
+});
+
 export default router;
