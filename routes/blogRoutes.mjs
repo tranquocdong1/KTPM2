@@ -1,17 +1,13 @@
-//routes/blogRoutes.mjs
 import express from 'express';
-import { getBlogPage, getBlogDetail  } from '../controllers/blogController.mjs';
+import { getBlogPage, getBlogDetail } from '../controllers/blogController.mjs';
 import Blog from '../models/blog.mjs';
 
 const router = express.Router();
 
-// Route cho trang About
+// Existing routes
 router.get('/blog', getBlogPage);
-
-// Route cho chi tiết blog
 router.get('/blog/:id', getBlogDetail);
 
-// Route: Lấy danh blog
 router.get('/', async (req, res) => {
     try {
         const blogs = await Blog.find();
@@ -21,8 +17,6 @@ router.get('/', async (req, res) => {
     }
 });
 
-
-// Route: Thêm sản phẩm mới (chỉ để thử nghiệm)
 router.post('/add', async (req, res) => {
     try {
         const { title, description, image, date, content } = req.body;
@@ -35,5 +29,30 @@ router.post('/add', async (req, res) => {
     }
 });
 
+// New API routes for mobile app
+// Get all blogs as JSON
+router.get('/api/blogs', async (req, res) => {
+    try {
+        const blogs = await Blog.find().sort({ date: -1 }); // Sort by date descending
+        res.json({ blogs });
+    } catch (error) {
+        console.error('Error fetching blogs for API:', error);
+        res.status(500).json({ error: 'Error fetching blogs' });
+    }
+});
+
+// Get single blog by ID as JSON
+router.get('/api/blog/:id', async (req, res) => {
+    try {
+        const blog = await Blog.findById(req.params.id);
+        if (!blog) {
+            return res.status(404).json({ error: 'Blog not found' });
+        }
+        res.json({ blog });
+    } catch (error) {
+        console.error('Error fetching blog detail for API:', error);
+        res.status(500).json({ error: 'Error fetching blog detail' });
+    }
+});
 
 export default router;
