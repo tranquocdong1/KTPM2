@@ -12,7 +12,7 @@ router.get('/cart', async (req, res) => {
   try {
     const userId = req.session.userId; 
     const cart = await Cart.findOne({ userId }).populate('items.productId');
-    
+
     let subtotal = 0;
     if (cart && cart.items) {
       cart.items = cart.items.filter(item => item.productId);
@@ -35,10 +35,10 @@ router.get('/api/cart', async (req, res) => {
   try {
     const userId = req.session.userId;
     const cart = await Cart.findOne({ userId }).populate('items.productId');
-    
+
     let subtotal = 0;
     let items = [];
-    
+
     if (cart && cart.items) {
       items = cart.items
         .filter(item => item.productId)
@@ -46,7 +46,7 @@ router.get('/api/cart', async (req, res) => {
           if (item.productId && item.productId.price) {
             const itemSubtotal = item.productId.price * item.quantity;
             subtotal += itemSubtotal;
-            
+
             return {
               productId: item.productId._id,
               name: item.productId.name,
@@ -60,7 +60,7 @@ router.get('/api/cart', async (req, res) => {
         })
         .filter(item => item !== null);
     }
-    
+
     res.json({
       items: items,
       subtotal: subtotal.toFixed(2),
@@ -77,27 +77,23 @@ let cart = { items: [] };
 
 router.post('/add-to-cart', async (req, res) => {
   try {
-    const { productId, quantity, userId } = req.body;
-    // Ưu tiên userId từ session, nếu không có thì dùng từ request body
-    const userIdentifier = req.session.userId || userId || 'guest-user';
-    
+    const { productId, quantity } = req.body;
     if (!productId || !quantity) {
-      return res.status(400).json({ message: 'Missing productId or quantity', success: false });
+      return res.status(400).json({ message: 'Missing productId or quantity' });
     }
 
     const product = await Product.findById(productId);
     if (!product) {
-      return res.status(404).json({ message: 'Product not found', success: false });
+      return res.status(404).json({ message: 'Product not found' });
     }
 
-    let cart = await Cart.findOne({ userId: userIdentifier });
+    let cart = await Cart.findOne();
     if (!cart) {
       cart = new Cart({
-        userId: userIdentifier,
         items: [{ productId: product._id, quantity }],
       });
       await cart.save();
-      return res.status(200).json({ message: 'Product added to cart successfully', success: true });
+      return res.status(200).json({ message: 'Product added to cart successfully' });
     } else {
       const itemIndex = cart.items.findIndex(item => item.productId.toString() === productId);
       if (itemIndex >= 0) {
@@ -106,11 +102,11 @@ router.post('/add-to-cart', async (req, res) => {
         cart.items.push({ productId: product._id, quantity });
       }
       await cart.save();
-      return res.status(200).json({ message: 'Product added to cart successfully', success: true });
+      return res.status(200).json({ message: 'Product added to cart successfully' });
     }
   } catch (error) {
     console.error('Error adding product to cart:', error);
-    res.status(500).json({ message: 'Server error', success: false });
+    res.status(500).json({ message: 'Server error' });
   }
 });
 

@@ -39,7 +39,6 @@ router.get('/api/product/:id', async (req, res) => {
   }
 });
 
-
 router.post('/add', async (req, res) => {
   try {
     const { name, price, description, image } = req.body;
