@@ -9,6 +9,8 @@ rootRouter.get("/login", HomeController.login);
 rootRouter.post("/login", HomeController.createLogin);
 rootRouter.get("/signup", HomeController.signup);
 rootRouter.post("/signup", HomeController.createSignup);
+rootRouter.get("/dashboard", HomeController.dashboard);
+
 
 
 export default rootRouter;
